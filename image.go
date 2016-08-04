@@ -1,4 +1,4 @@
-package markovdraw
+package main
 
 import (
 	"image"
@@ -38,6 +38,22 @@ func (s Segment) Compare(state markovchain.State) markovchain.Comparison {
 		return markovchain.Less
 	} else if s.Y > s1.Y {
 		return markovchain.Greater
+	}
+	return markovchain.Equal
+}
+
+// A SegmentTuple is a markovchain.Sample which stores
+// multiple Segments at once.
+type SegmentTuple []Segment
+
+func (s SegmentTuple) Compare(state markovchain.State) markovchain.Comparison {
+	s1 := state.(SegmentTuple)
+	for i, seg := range s {
+		res := seg.Compare(s1[i])
+		if res == markovchain.Equal {
+			continue
+		}
+		return res
 	}
 	return markovchain.Equal
 }
