@@ -7,9 +7,21 @@ import (
 
 	"github.com/llgcode/draw2d"
 	"github.com/llgcode/draw2d/draw2dimg"
-	"github.com/unixpickle/linetrace"
 	"github.com/unixpickle/markovchain"
 )
+
+type Point struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+type Path []Point
+
+func (p Path) Copy() Path {
+	res := make(Path, len(p))
+	copy(res, p)
+	return res
+}
 
 const (
 	maxSegLength = 3
@@ -59,7 +71,7 @@ func (s SegmentTuple) Compare(state markovchain.State) markovchain.Comparison {
 }
 
 // SegmentPath turns a path into a list of short segments.
-func SegmentPath(p linetrace.Path) []Segment {
+func SegmentPath(p Path) []Segment {
 	if len(p) < 2 {
 		return nil
 	}
@@ -115,6 +127,6 @@ func SegmentImage(s []Segment, imageSize int) image.Image {
 	return newImage
 }
 
-func distance(p1, p2 linetrace.PathNode) float64 {
+func distance(p1, p2 Point) float64 {
 	return math.Sqrt(math.Pow(p1.X-p2.X, 2) + math.Pow(p1.Y-p2.Y, 2))
 }

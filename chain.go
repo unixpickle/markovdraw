@@ -1,11 +1,8 @@
 package main
 
-import (
-	"github.com/unixpickle/linetrace"
-	"github.com/unixpickle/markovchain"
-)
+import "github.com/unixpickle/markovchain"
 
-func BuildChain(paths []linetrace.Path) *markovchain.Chain {
+func BuildChain(paths []Path) *markovchain.Chain {
 	segChan := make(chan Segment)
 	sampleChan := make(chan markovchain.State)
 	go func() {

@@ -8,8 +8,6 @@ import (
 	"math/rand"
 	"os"
 	"time"
-
-	"github.com/unixpickle/linetrace"
 )
 
 func main() {
@@ -26,7 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var list []linetrace.Path
+	var list []Path
 	if err := json.Unmarshal(data, &list); err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to unmarshal paths:", err)
 		os.Exit(1)
