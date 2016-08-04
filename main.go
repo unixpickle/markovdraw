@@ -3,11 +3,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"image"
 	"image/png"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"time"
+
+	"github.com/llgcode/draw2d/draw2dimg"
+)
+
+const (
+	gridWidth   = 10
+	gridHeight  = 7
+	cellSpacing = 5
+	cellSize    = 64
 )
 
 func main() {
@@ -38,8 +48,24 @@ func main() {
 	}
 
 	chain := BuildChain(list)
-	sample := SampleChain(chain)
-	image := SegmentImage(sample, 64)
+
+	gridImage := image.NewRGBA(image.Rect(0, 0, gridWidth*cellSize+
+		(gridWidth+1)*cellSpacing, gridHeight*cellSize+
+		(gridHeight+1)*cellSpacing))
+	ctx := draw2dimg.NewGraphicContext(gridImage)
+
+	for x := 0; x < gridWidth; x++ {
+		for y := 0; y < gridHeight; y++ {
+			sample := SampleChain(chain)
+			image := SegmentImage(sample, 64)
+			imgX := x*cellSize + (x+1)*cellSpacing
+			imgY := y*cellSize + (y+1)*cellSpacing
+			ctx.Save()
+			ctx.Translate(float64(imgX), float64(imgY))
+			ctx.DrawImage(image)
+			ctx.Restore()
+		}
+	}
 
 	outFile, err := os.Create(os.Args[2])
 	if err != nil {
@@ -48,5 +74,5 @@ func main() {
 	}
 	defer outFile.Close()
 
-	png.Encode(outFile, image)
+	png.Encode(outFile, gridImage)
 }
