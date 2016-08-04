@@ -2,55 +2,40 @@ package main
 
 import "github.com/unixpickle/markovchain"
 
+const memorySize = 2
+
 func BuildChain(paths []Path) *markovchain.Chain {
-	segChan := make(chan Segment)
-	sampleChan := make(chan markovchain.State)
+	stateChan := make(chan markovchain.State)
 	go func() {
+		var state SegmentTuple
 		for _, path := range paths {
 			segments := SegmentPath(path)
+			segments = append([]Segment{Segment{}}, segments...)
 			for _, seg := range segments {
-				segChan <- seg
+				state = append(state, seg)
+				if len(state) > memorySize {
+					state = state[1:]
+				}
+				stateChan <- state
 			}
 		}
-		close(segChan)
+		stateChan <- SegmentTuple{Segment{}}
+		close(stateChan)
 	}()
-	go func() {
-		var tuple SegmentTuple
-		for seg := range segChan {
-			tuple = append(tuple, seg)
-			if len(tuple) == 2 {
-				sampleChan <- tuple
-				tuple = nil
-			}
-		}
-		close(sampleChan)
-	}()
-	return markovchain.NewChainChan(sampleChan)
+	return markovchain.NewChainChan(stateChan)
 }
 
-func SampleChain(chain *markovchain.Chain, count int) []Segment {
-	var state markovchain.State
-	chain.Iterate(func(s *markovchain.StateTransitions) bool {
-		state = s.State
-		return false
-	})
-
-	// Monto carlo way of going to a random state.
-	for i := 0; i < 100; i++ {
-		newStart := chain.Lookup(state).Sample()
-		if newStart == nil {
-			break
-		}
-		state = newStart
-	}
-
+func SampleChain(chain *markovchain.Chain) []Segment {
 	var res []Segment
-	for i := 0; i < count; i++ {
+	var state markovchain.State = SegmentTuple{Segment{}}
+	for {
 		state = chain.Lookup(state).Sample()
-		if state == nil {
+		tuple := state.(SegmentTuple)
+		last := tuple[len(tuple)-1]
+		if (last == Segment{}) {
 			break
 		}
-		res = append(res, state.(SegmentTuple)...)
+		res = append(res, last)
 	}
 	return res
 }

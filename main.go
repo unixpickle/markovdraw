@@ -38,7 +38,7 @@ func main() {
 	}
 
 	chain := BuildChain(list)
-	sample := SampleChain(chain, 8)
+	sample := SampleChain(chain)
 	image := SegmentImage(sample, 64)
 
 	outFile, err := os.Create(os.Args[2])

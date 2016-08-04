@@ -60,6 +60,11 @@ type SegmentTuple []Segment
 
 func (s SegmentTuple) Compare(state markovchain.State) markovchain.Comparison {
 	s1 := state.(SegmentTuple)
+	if len(s) < len(s1) {
+		return markovchain.Less
+	} else if len(s) > len(s1) {
+		return markovchain.Greater
+	}
 	for i, seg := range s {
 		res := seg.Compare(s1[i])
 		if res == markovchain.Equal {
@@ -115,9 +120,10 @@ func SegmentImage(s []Segment, imageSize int) image.Image {
 	ctx.SetLineWidth(2.4)
 	ctx.SetStrokeColor(color.Gray{})
 	ctx.BeginPath()
-	ctx.MoveTo(float64(imageSize)/2, float64(imageSize)/2)
-	curX := 24.0
-	curY := 24.0
+
+	curX := float64(imageSize) / 2
+	curY := float64(imageSize) / 2
+	ctx.MoveTo(curX, curY)
 	for _, s := range s {
 		curX += float64(s.X)
 		curY += float64(s.Y)
